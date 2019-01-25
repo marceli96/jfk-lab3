@@ -3,7 +3,7 @@ package dependent;
 import Prism.Description;
 import Prism.ICallable;
 
-@Description(description = "Callable 3 - a type in another assembly")
+@Description(description = "arg1 * arg2 - 3 * arg2")
 public final class Callable3 implements ICallable {
     @Override
     public int generate(int number1, int number2) {

@@ -2,6 +2,8 @@ package Prism.JavaFX;
 
 import Prism.Description;
 import Prism.ICallable;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -28,16 +30,10 @@ import java.util.jar.JarFile;
 public class Controller implements Initializable {
 
     @FXML
-    private Button buttonOpen, buttonRun;
+    private Button buttonRun;
 
     @FXML
-    private Text textWarning, textPath, textResult, textArg1Error, textArg2Error, textNoMethod, textArgsTypeError;
-
-    @FXML
-    private RadioButton rbMethod1, rbMethod2, rbMethod3, rbMethod4;
-
-    @FXML
-    private ToggleGroup methodGroup;
+    private Text textWarning, textPath, textResult, textArg1Error, textArg2Error, textNoMethod;
 
     @FXML
     private TextField tfArg1, tfArg2;
@@ -63,8 +59,9 @@ public class Controller implements Initializable {
     @FXML
     private TableColumn<Metadata, String> description;
 
+    @FXML
+    private ListView<String> lvMethods;
 
-    private ArrayList<RadioButton> rbMethods;
     private ArrayList<Class> classes;
     private ObservableList<Metadata> tableData;
 
@@ -89,8 +86,7 @@ public class Controller implements Initializable {
     private void reflection(File directory) throws Exception {
         tableData.clear();
         classes.clear();
-        clearRadioButtons();
-        int i = 0;
+        lvMethods.getItems().clear();
         File[] files = directory.listFiles();
         if (files != null) {
             for (File file : files) {
@@ -123,7 +119,7 @@ public class Controller implements Initializable {
 
                             Method[] methods = c.getDeclaredMethods();
                             Class<?>[] parametersType = methods[0].getParameterTypes();
-                            rbMethods.get(i++).setText(c.getName() + "::" + methods[0].getName());
+                            lvMethods.getItems().add(c.getSimpleName() + " :: " + methods[0].getName());
                             classes.add(c);
                             tableData.add(new Metadata(className, methods[0].getName(), parametersType[0].getName(),
                                     parametersType[1].getName(), methods[0].getReturnType().getName(), description.description()));
@@ -143,26 +139,16 @@ public class Controller implements Initializable {
         textArg1Error.setVisible(false);
         textArg2Error.setVisible(false);
         textNoMethod.setVisible(false);
-        textArgsTypeError.setVisible(false);
-        if (!tfArg1.getText().isEmpty() && !tfArg2.getText().isEmpty() && methodGroup.getSelectedToggle() != null) {
-            RadioButton radioButton = (RadioButton) methodGroup.getSelectedToggle();
+
+        if(!tfArg1.getText().isEmpty() && !tfArg2.getText().isEmpty() && lvMethods.getSelectionModel().getSelectedIndex() != -1){
+            int arg1 = Integer.parseInt(tfArg1.getText());
+            int arg2 = Integer.parseInt(tfArg2.getText());
             try {
-                int arg1 = Integer.parseInt(tfArg1.getText());
-                int arg2 = Integer.parseInt(tfArg2.getText());
-                if (radioButton.equals(rbMethod1))
-                    executeMethod(0, arg1, arg2);
-                else if (radioButton.equals(rbMethod2))
-                    executeMethod(1, arg1, arg2);
-                else if (radioButton.equals(rbMethod3))
-                    executeMethod(2, arg1, arg2);
-                else if (radioButton.equals(rbMethod4))
-                    executeMethod(3, arg1, arg2);
+                executeMethod(lvMethods.getSelectionModel().getSelectedIndex(), arg1, arg2);
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
             } catch (InstantiationException e) {
                 e.printStackTrace();
-            } catch (NumberFormatException e) {
-                textArgsTypeError.setVisible(true);
             }
         } else {
             if (tfArg1.getText().isEmpty()) {
@@ -173,57 +159,20 @@ public class Controller implements Initializable {
                 textArg2Error.setText("Podaj argument 2");
                 textArg2Error.setVisible(true);
             }
-            if (methodGroup.getSelectedToggle() == null)
+            if (lvMethods.getSelectionModel().getSelectedIndex() == -1)
                 textNoMethod.setVisible(true);
         }
     }
 
     private void executeMethod(int i, int arg1, int arg2) throws IllegalAccessException, InstantiationException {
         ICallable callable;
-        switch (i) {
-            case 0:
-                if(!rbMethod1.getText().isEmpty()){
-                    callable = (ICallable) classes.get(i).newInstance();
-                    textResult.setText(String.valueOf(callable.generate(arg1, arg2)));
-                }
-                break;
-            case 1:
-                if(!rbMethod2.getText().isEmpty()){
-                    callable = (ICallable) classes.get(i).newInstance();
-                    textResult.setText(String.valueOf(callable.generate(arg1, arg2)));
-                }
-                break;
-            case 2:
-                if(!rbMethod3.getText().isEmpty()){
-                    callable = (ICallable) classes.get(i).newInstance();
-                    textResult.setText(String.valueOf(callable.generate(arg1, arg2)));
-                }
-                break;
-            case 3:
-                if(!rbMethod4.getText().isEmpty()){
-                    callable = (ICallable) classes.get(i).newInstance();
-                    textResult.setText(String.valueOf(callable.generate(arg1, arg2)));
-                }
-                break;
-        }
-    }
-
-    private void clearRadioButtons() {
-        rbMethod1.setText("");
-        rbMethod2.setText("");
-        rbMethod3.setText("");
-        rbMethod4.setText("");
+        callable = (ICallable) classes.get(i).newInstance();
+        textResult.setText(String.valueOf(callable.generate(arg1, arg2)));
     }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         classes = new ArrayList<Class>();
-
-        rbMethods = new ArrayList<RadioButton>();
-        rbMethods.add(rbMethod1);
-        rbMethods.add(rbMethod2);
-        rbMethods.add(rbMethod3);
-        rbMethods.add(rbMethod4);
 
         tableData = FXCollections.observableArrayList();
         className.setCellValueFactory(new PropertyValueFactory<Metadata, String>("className"));
@@ -233,6 +182,24 @@ public class Controller implements Initializable {
         arg2.setCellValueFactory(new PropertyValueFactory<Metadata, String>("arg2"));
         returnType.setCellValueFactory(new PropertyValueFactory<Metadata, String>("returnType"));
         metadataTable.setItems(tableData);
+
+        tfArg1.textProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                if (!newValue.matches("\\d*")) {
+                    tfArg1.setText(newValue.replaceAll("[^\\d]", ""));
+                }
+            }
+        });
+
+        tfArg2.textProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                if (!newValue.matches("\\d*")) {
+                    tfArg2.setText(newValue.replaceAll("[^\\d]", ""));
+                }
+            }
+        });
 
         buttonRun.setDisable(true);
     }

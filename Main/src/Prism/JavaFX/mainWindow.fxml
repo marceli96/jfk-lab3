@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
-<?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.text.Text?>
 
@@ -15,14 +14,6 @@
       <Text fx:id="textWarning" fill="RED" layoutX="22.0" layoutY="75.0" strokeType="OUTSIDE" strokeWidth="0.0" visible="false" />
       <Text layoutX="134.0" layoutY="42.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Path:" />
       <Text fx:id="textPath" layoutX="173.0" layoutY="42.0" strokeType="OUTSIDE" strokeWidth="0.0" />
-      <RadioButton fx:id="rbMethod1" layoutX="20.0" layoutY="90.0" mnemonicParsing="false">
-         <toggleGroup>
-            <ToggleGroup fx:id="methodGroup" />
-         </toggleGroup>
-      </RadioButton>
-      <RadioButton fx:id="rbMethod2" layoutX="20.0" layoutY="120.0" mnemonicParsing="false" toggleGroup="$methodGroup" />
-      <RadioButton fx:id="rbMethod3" layoutX="20.0" layoutY="150.0" mnemonicParsing="false" toggleGroup="$methodGroup" />
-      <RadioButton fx:id="rbMethod4" layoutX="20.0" layoutY="180.0" mnemonicParsing="false" toggleGroup="$methodGroup" />
       <Text layoutX="22.0" layoutY="250.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Arguments:" />
       <Text layoutX="32.0" layoutY="277.0" strokeType="OUTSIDE" strokeWidth="0.0" text="1:" />
       <TextField fx:id="tfArg1" layoutX="55.0" layoutY="255.0" prefHeight="31.0" prefWidth="135.0" />
@@ -44,6 +35,6 @@
             <TableColumn fx:id="returnType" minWidth="3.0" prefWidth="60.0" text="Return" />
         </columns>
       </TableView>
-      <Text fx:id="textArgsTypeError" fill="RED" layoutX="400.0" layoutY="278.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Podaj poprawne argumenty" visible="false" />
+      <ListView fx:id="lvMethods" layoutX="13.0" layoutY="69.0" prefHeight="130.0" prefWidth="243.0" />
    </children>
 </Pane>
