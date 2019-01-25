@@ -47,7 +47,6 @@ public class Controller implements Initializable {
     private ListView<String> lvMethods;
 
     private ArrayList<Class> classes;
-    private ArrayList<String> metadata;
 
     public void buttonOpenAction(ActionEvent event) {
         textWarning.setVisible(false);
