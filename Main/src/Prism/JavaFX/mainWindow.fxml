@@ -23,9 +23,9 @@
       <Text fx:id="textResult" layoutX="157.0" layoutY="340.0" strokeType="OUTSIDE" strokeWidth="0.0" />
       <Text fx:id="textArg1Error" fill="RED" layoutX="54.0" layoutY="303.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Podaj argument 1" visible="false" />
       <Text fx:id="textArg2Error" fill="RED" layoutX="244.0" layoutY="303.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Podaj argument 2" visible="false" />
-      <Text fx:id="textNoMethod" fill="RED" layoutX="18.0" layoutY="220.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Wybierz metodę" visible="false" />
-      <ListView fx:id="lvMethods" layoutX="13.0" layoutY="69.0" prefHeight="130.0" prefWidth="243.0" />
-      <TextArea fx:id="taMetadata" layoutX="410.0" layoutY="83.0" prefHeight="264.0" prefWidth="328.0" />
-      <Text layoutX="410.0" layoutY="75.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Metadata" />
+      <Text fx:id="textNoMethod" fill="RED" layoutX="227.0" layoutY="89.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Wybierz metodę" visible="false" />
+      <ListView fx:id="lvMethods" layoutX="46.0" layoutY="97.0" prefHeight="130.0" prefWidth="289.0" />
+      <TextArea fx:id="taMetadata" layoutX="410.0" layoutY="94.0" prefHeight="264.0" prefWidth="328.0" />
+      <Text layoutX="410.0" layoutY="84.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Metadata" />
    </children>
 </Pane>
