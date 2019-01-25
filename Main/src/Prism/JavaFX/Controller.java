@@ -7,10 +7,12 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.text.Text;
 import javafx.stage.DirectoryChooser;
 
@@ -39,31 +41,13 @@ public class Controller implements Initializable {
     private TextField tfArg1, tfArg2;
 
     @FXML
-    private TableView metadataTable;
-
-    @FXML
-    private TableColumn<Metadata, String> className;
-
-    @FXML
-    private TableColumn<Metadata, String> methodName;
-
-    @FXML
-    private TableColumn<Metadata, String> arg1;
-
-    @FXML
-    private TableColumn<Metadata, String> arg2;
-
-    @FXML
-    private TableColumn<Metadata, String> returnType;
-
-    @FXML
-    private TableColumn<Metadata, String> description;
+    private TextArea taMetadata;
 
     @FXML
     private ListView<String> lvMethods;
 
     private ArrayList<Class> classes;
-    private ObservableList<Metadata> tableData;
+    private ArrayList<String> metadata;
 
     public void buttonOpenAction(ActionEvent event) {
         textWarning.setVisible(false);
@@ -84,7 +68,7 @@ public class Controller implements Initializable {
     }
 
     private void reflection(File directory) throws Exception {
-        tableData.clear();
+        taMetadata.clear();
         classes.clear();
         lvMethods.getItems().clear();
         File[] files = directory.listFiles();
@@ -112,17 +96,14 @@ public class Controller implements Initializable {
                             if (!c.isAnnotationPresent(Description.class))
                                 continue;
 
-                            Description description = c.getAnnotation(Description.class);
-
                             if (!ICallable.class.isAssignableFrom(c))
                                 throw new Exception("Class " + className + " does not implement contract.");
 
                             Method[] methods = c.getDeclaredMethods();
-                            Class<?>[] parametersType = methods[0].getParameterTypes();
-                            lvMethods.getItems().add(c.getSimpleName() + " :: " + methods[0].getName());
-                            classes.add(c);
-                            tableData.add(new Metadata(className, methods[0].getName(), parametersType[0].getName(),
-                                    parametersType[1].getName(), methods[0].getReturnType().getName(), description.description()));
+                            for (int i = 0; i < methods.length; i++) {
+                                classes.add(c);
+                                lvMethods.getItems().add(c.getSimpleName() + " :: " + methods[i].getName());
+                            }
                         }
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -140,7 +121,7 @@ public class Controller implements Initializable {
         textArg2Error.setVisible(false);
         textNoMethod.setVisible(false);
 
-        if(!tfArg1.getText().isEmpty() && !tfArg2.getText().isEmpty() && lvMethods.getSelectionModel().getSelectedIndex() != -1){
+        if (!tfArg1.getText().isEmpty() && !tfArg2.getText().isEmpty() && lvMethods.getSelectionModel().getSelectedIndex() != -1) {
             int arg1 = Integer.parseInt(tfArg1.getText());
             int arg2 = Integer.parseInt(tfArg2.getText());
             try {
@@ -174,15 +155,6 @@ public class Controller implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         classes = new ArrayList<Class>();
 
-        tableData = FXCollections.observableArrayList();
-        className.setCellValueFactory(new PropertyValueFactory<Metadata, String>("className"));
-        description.setCellValueFactory(new PropertyValueFactory<Metadata, String>("description"));
-        methodName.setCellValueFactory(new PropertyValueFactory<Metadata, String>("methodName"));
-        arg1.setCellValueFactory(new PropertyValueFactory<Metadata, String>("arg1"));
-        arg2.setCellValueFactory(new PropertyValueFactory<Metadata, String>("arg2"));
-        returnType.setCellValueFactory(new PropertyValueFactory<Metadata, String>("returnType"));
-        metadataTable.setItems(tableData);
-
         tfArg1.textProperty().addListener(new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
@@ -197,6 +169,45 @@ public class Controller implements Initializable {
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
                 if (!newValue.matches("\\d*")) {
                     tfArg2.setText(newValue.replaceAll("[^\\d]", ""));
+                }
+            }
+        });
+
+        lvMethods.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                if (lvMethods.getSelectionModel().getSelectedIndex() != -1) {
+                    taMetadata.clear();
+
+                    Class<?> c = classes.get(lvMethods.getSelectionModel().getSelectedIndex());
+                    Description description = c.getAnnotation(Description.class);
+                    taMetadata.appendText("Class name: " + c.getSimpleName() + "\n");
+                    taMetadata.appendText("Description: " + description.description() + "\n");
+
+                    Class<?>[] interfaces =  c.getInterfaces();
+                    taMetadata.appendText("Interfaces: \n");
+                    for(int i = 0; i < interfaces.length; i++)
+                        taMetadata.appendText("\t" + interfaces[i].getSimpleName() + "\n");
+
+                    Method[] methods = c.getDeclaredMethods();
+                    taMetadata.appendText("Methods: \n");
+                    for(int i = 0; i < methods.length; i++){
+                        taMetadata.appendText("\t" + methods[i].getName() + "\n");
+
+                        Class<?>[] parametersType =  methods[i].getParameterTypes();
+                        taMetadata.appendText("\t\tParameters: \n");
+                        if(parametersType.length == 0)
+                            taMetadata.appendText("\t\t\tNone\n");
+                        else {
+                            for(int j = 0; j < parametersType.length; j++){
+                                taMetadata.appendText("\t\t\t Arg " + (j+1) + ": " + parametersType[j].getName() + "\n");
+                            }
+                        }
+
+                        Class<?> returnType = methods[i].getReturnType();
+                        taMetadata.appendText("\t\tReturn: \n");
+                        taMetadata.appendText("\t\t\t" + returnType.getName());
+                    }
                 }
             }
         });
